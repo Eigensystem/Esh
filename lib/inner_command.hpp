@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "cd.hpp"
 
-//File system operations
+//Inner function pwn & cd
 
 void fsoperate(char * command, char * argv, int com_len){
 	if(!strcmp(command, "pwd")){

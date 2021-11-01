@@ -1,7 +1,8 @@
 #include <iostream>
 #include <readline/readline.h>
 #include "../config/config.hpp"
-#include "../lib/inner_command.hpp"
+#include "inner_command.hpp"
+#include "outer_command.hpp"
 // #include "../tools/stringhandler.hpp"
 
 namespace esh{
@@ -11,7 +12,10 @@ namespace esh{
 	int com_len;
 
 	bool read_command(){
-		char * str = readline("> \0");
+		char * buf = (char *)malloc(0x100);
+		char * path = getcwd(buf, 0x100);
+		strcat(buf, " > \0");
+		char * str = readline(buf);
 		if(str[0] == '\0' || str[0] == ' '){
 			printf("\n");
 			return 0;
@@ -27,6 +31,7 @@ namespace esh{
 
 	void exec_command(){
 		inner_exec(command, argv, com_len);
+		outer_exec(command, argv, com_len);
 	}
 
 	void clear_space(){

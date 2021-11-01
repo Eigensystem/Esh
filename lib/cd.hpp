@@ -52,5 +52,6 @@ void cd(char * argv, char * command, int com_len){
             cd_error(tmp);
         }
 	}
+    free(buf);
 
 }
