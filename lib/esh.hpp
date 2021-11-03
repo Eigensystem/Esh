@@ -3,40 +3,67 @@
 #include "../config/config.hpp"
 #include "inner_command.hpp"
 #include "outer_command.hpp"
-// #include "../tools/stringhandler.hpp"
+
+#ifndef _STRINGHANDLER_HPP_
+#define _STRINGHANDLER_HPP_
+    #include "../tools/stringHandler.hpp"
+#endif
+
+#ifndef _ERRORHANDLER_HPP_
+#define _ERRORHANDLER_HPP_
+    #include "../tools/errorHandler.hpp"
+#endif
 
 namespace esh{
-	char * command;
-	char * argv;
 	int count;
-	int com_len;
+	char ** argument;
+	char ** dir;
+	int dir_count;
+	char * work_dir;
+
+	void start_config(){
+		dir = (char **)malloc(0x20);
+		char * buf = (char *)malloc(0x100);
+		work_dir = getcwd(buf, 0x100);
+		strcat(work_dir, "/");
+		dir[0] = work_dir;
+		readlink("/proc/self/exe", buf, 0x100);
+		char * tmp = buf + strlen(buf) - 3;
+		tmp[0] = '\0';
+		strcat(buf, "bin/");
+		dir[1] = buf;
+		strcpy(buf, getenv("HOME"));
+		chdir(buf);
+		free(buf);
+		dir_count = 2;
+	}
 
 	bool read_command(){
 		char * buf = (char *)malloc(0x100);
 		char * path = getcwd(buf, 0x100);
 		strcat(buf, " > \0");
-		char * str = readline(buf);
-		if(str[0] == '\0' || str[0] == ' '){
-			printf("\n");
+		char * str = readline(buf);		//readline prompt setting : PATH_TO_HERE >
+		if(str[0] == '\0'){
 			return 0;
 		}
-		com_len = strlen(str);
-		command = strtok(str, " ");
-		argv = crossfront(str + strlen(command) + 1, ' ');
-		if(argv - command >= com_len){
-			argv = nullptr;
-		}
+		count = string2arr(str, &argument);	
 		return 1;
 	}
 
 	void exec_command(){
-		inner_exec(command, argv, com_len);
-		outer_exec(command, argv, com_len);
+		bool flag = inner_exec(argument, count);
+		if(flag){
+			return;
+		}
+		flag = outer_exec(argument, count, dir, dir_count);
+		if(!flag){
+			comd_nfount(argument[0]);
+		}
 	}
 
 	void clear_space(){
-		free(command);
-		command = nullptr;
+		free(argument[0]);
+		free(argument);
 		return;
 	}
 }

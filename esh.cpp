@@ -4,7 +4,7 @@
 int main(){
 
 	signal(SIGINT, SH_INThandler);
-	// esh::read_config();
+	esh::start_config();
 	while(1){
 		if(!esh::read_command()){
 			continue;

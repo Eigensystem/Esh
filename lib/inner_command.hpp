@@ -6,11 +6,10 @@
 
 //Inner function pwn & cd
 
-void fsoperate(char * command, char * argv, int com_len){
-	if(!strcmp(command, "pwd")){
-		if(argv != nullptr){
+bool fsoperate(char ** argument, int count){
+	if(!strcmp(argument[0], "pwd")){
+		if(count > 1){
 			many_argu("pwd");
-			return;
 		}
 		else{
 			char * buf = (char *)malloc(0x100);
@@ -18,41 +17,51 @@ void fsoperate(char * command, char * argv, int com_len){
 			printf("%s\n", buf);
 			free(buf);
 		}
+		return 1;
 	}
-	else if(!strcmp(command, "cd")){
-		cd(argv, command, com_len);
+	else if(!strcmp(argument[0], "cd")){
+		cd(argument, count);
+		return 1;
+	}
+	else{
+		return 0;
 	}
 }
 
 //Inner function echo
 
-void echo(char * command, char * argv, int com_len){
-	while(argv - command < com_len){
-		char * tmp = strtok(argv, " ");
-		argv = crossfront(argv + strlen(tmp) + 1, ' ');
-		printf("%s ", tmp);
+void echo(char ** argument, int count){
+	for(int i = 1; i < count; ++i){
+		printf("%s ", argument[i]);
 	}
 	printf("\n");
 }
 
 //Inner function exit
 
-void sh_exit(char * command){
+void sh_exit(char * command, char ** argument){
 	free(command);
+	free(argument);
 	exit(0);
 }
 
 
 //The inner function entry
 
-void inner_exec(char * command, char * argv, int com_len){
-	if(!strcmp(command, "echo")){
-		echo(command, argv, com_len);
+bool inner_exec(char ** argument, int count){
+	bool flag = 0;
+	if(!strcmp(argument[0], "echo")){
+		echo(argument, count);
+		return 1;
 	}
-	else if(!strcmp(command, "exit")){
-		sh_exit(command);
+	else if(!strcmp(argument[0], "exit")){
+		sh_exit(argument[0], argument);
+		return 1;
+	}
+	else if(fsoperate(argument, count)){
+		return 1;
 	}
 	else{
-		fsoperate(command, argv, com_len);
+		return 0;
 	}
 }
