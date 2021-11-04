@@ -11,7 +11,7 @@ bool outer_exec(char ** argument, int count, char ** dir, int dir_count){
     struct stat *buf = (struct stat *)malloc(sizeof(struct stat));
     char * path = (char *)malloc(0x100);
     for(int i = 0; i < dir_count; ++i){
-        strcpy(path, dir[0]);
+        strcpy(path, dir[i]);
         strcat(path, argument[0]);
         bool flag = stat(path, buf);
         if(flag){

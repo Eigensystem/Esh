@@ -57,8 +57,11 @@ void cd(char ** argument, int count){
 		else if(fst_para[0] == '/'){
 			flag = chdir(fst_para);
 		}
+		else{
+			flag = chdir(fst_para);
+		}
 		if(flag){
-			cd_error(fst_para);
+			dir_nexist("cd", fst_para);
 		}
 	}
 	else{
