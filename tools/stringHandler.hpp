@@ -1,6 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef _STRUCT_HPP_
+#define _STRUCT_HPP_
+    #include "struct.hpp"
+#endif
+
 char * crossfront(char * string, char ch){
 	while(string[0] == ch){
 		string += 1;
@@ -30,3 +35,24 @@ int string2arr(char * str, char *** argument){
 	return count;
 }
 
+file_data * filepath2filedata(char * filepath){
+	int i;
+	file_data * file = (file_data *)malloc(sizeof(struct file_data));
+	bool flag = 0;
+	for(i = strlen(filepath)-1; i >= 0; --i){
+		if(filepath[i] == '/'){
+			filepath[i] = '\0';
+			flag = 1;
+			break;
+		}
+	}
+	if(!flag){
+		file->dir_path = nullptr;
+		file->file_name = filepath;
+	}
+	else{
+		file->dir_path = filepath;
+		file->file_name = filepath + i + 1;
+	}
+	return file;
+}

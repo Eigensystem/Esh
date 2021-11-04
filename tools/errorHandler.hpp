@@ -1,6 +1,7 @@
 #include <string.h>
 #include <iostream>
 
+
 void many_argu(const char * bin_name){
     printf("%s: too many arguments\n", bin_name);
 }
@@ -19,6 +20,10 @@ void dir_nexist(const char * command, char * path){
     else{
         printf("%s: No such file or directory: %s\n",command, path);
     }
+}
+
+void is_dir_error(char * path){
+    printf("cat: %s: is a directory", path);
 }
 
 void comd_nfount(char * bin_name){
