@@ -60,6 +60,8 @@ namespace esh{
 		if(flag){
 			return;
 		}
+		argument = (char **)realloc(argument, count * 8 + 0x8);
+		argument[count] = nullptr;
 		flag = outer_exec(argument, count, dir, dir_count);
 		if(!flag){
 			comd_nfount(argument[0]);

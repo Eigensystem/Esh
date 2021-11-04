@@ -13,7 +13,10 @@ void dir_nexist(const char * command, char * path){
     if(!strcmp(command, "ls")){
         printf("%s: cannot access to \'%s\': no such file or directory", command, path);
     }
-    else{  
+    else if(!strcmp(command, "cd")){  
+        printf("%s: No such directory: %s\n",command, path);
+    }
+    else{
         printf("%s: No such file or directory: %s\n",command, path);
     }
 }

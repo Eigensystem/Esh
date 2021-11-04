@@ -21,7 +21,10 @@ bool showdir(char * dir, char * comd_dir){
     }
     directory_iterator list(path);
     for(auto & it:list){
-        cout << it.path().filename() << endl;
+        string filename = it.path().filename();
+        filename = filename.substr(0, filename.length());
+        cout << filename << endl;
     }
+    cout << endl;
     return 1;
 }

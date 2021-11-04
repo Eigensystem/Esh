@@ -24,42 +24,7 @@ void cd(char ** argument, int count){
 	}
 	else if(count == 2){
 		char * fst_para = argument[1];
-		if(fst_para[0] == '.' && fst_para[1] == '/'){
-			strcat(path, fst_para+1);
-			flag = chdir(path);
-		}
-		else if(fst_para[0] != '.' && fst_para[0] != '~' && fst_para[0] != '/'){
-			strcat(path, "/");
-			strcat(path, fst_para);
-			flag = chdir(path);
-		}
-		else if(fst_para[0] == '~'){
-			char * path = getenv("HOME");
-			strcat(path, fst_para+1);
-			flag = chdir(path);
-		}
-		else if(fst_para[0] == '.' && fst_para[1] == '.'){
-			int len = strlen(path);
-			for(int i = len-1; i >= 0; --i){
-				if(path[i] == '/'){
-					path[i] = '\0';
-                    break;
-				}
-			}
-			strcat(path, fst_para+2);
-			if(path[0] == '\0'){
-                flag = chdir("/");
-            }
-            else{
-                flag = chdir(path);
-            }
-		}
-		else if(fst_para[0] == '/'){
-			flag = chdir(fst_para);
-		}
-		else{
-			flag = chdir(fst_para);
-		}
+		flag = chdir(fst_para);
 		if(flag){
 			dir_nexist("cd", fst_para);
 		}
