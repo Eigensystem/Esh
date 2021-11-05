@@ -13,7 +13,6 @@ bool outer_exec(char ** argument, int count, char ** dir, int dir_count){
     for(int i = 0; i < dir_count; ++i){
         strcpy(path, dir[i]);
         strcat(path, argument[0]);
-        printf("%s", path);
         bool flag = stat(path, buf);
         if(flag){
             continue;

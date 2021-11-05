@@ -50,7 +50,7 @@ namespace esh{
 		if(str[0] == '\0'){
 			return 0;
 		}
-		count = string2arr(str, &argument);	
+		count = string2arr(str, &argument);
 		return 1;
 	}
 
