@@ -3,6 +3,9 @@
         "filesystem": "cpp",
         "csignal": "cpp",
         "chrono": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "fstream": "cpp",
+        "iosfwd": "cpp",
+        "iostream": "cpp"
     }
 }

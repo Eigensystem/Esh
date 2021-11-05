@@ -24,19 +24,14 @@ namespace esh{
 	void start_config(){
 		dir = (char **)malloc(0x20);
 		char * buf = (char *)malloc(0x100);
-		work_dir = getcwd(buf, 0x100);
-		strcat(work_dir, "/");
-		char * tmp = (char *)malloc(strlen(work_dir)+1);
-		strcpy(tmp, work_dir);
-		work_dir = tmp;
-		dir[0] = work_dir;
 		readlink("/proc/self/exe", buf, 0x100);
-		tmp = buf + strlen(buf) - 3;
+		char * tmp = buf + strlen(buf) - 3;
 		tmp[0] = '\0';
 		strcat(buf, "bin/");
 		tmp = (char *)malloc(strlen(buf));
 		strcpy(tmp, buf);
-		dir[1] = tmp;
+		dir[0] = tmp;
+		dir[1] = nullptr;
 		strcpy(buf, getenv("HOME"));
 		chdir(buf);
 		free(buf);
@@ -45,7 +40,11 @@ namespace esh{
 
 	bool read_command(){
 		char * buf = (char *)malloc(0x100);
-		char * path = getcwd(buf, 0x100);
+		char * work_dir = getcwd(buf, 0x100);
+		if(dir[1] != nullptr){
+			free(dir[1]);
+		}
+		dir[1] = work_dir;
 		strcat(buf, " > \0");
 		char * str = readline(buf);		//readline prompt setting : PATH_TO_HERE >
 		if(str[0] == '\0'){
