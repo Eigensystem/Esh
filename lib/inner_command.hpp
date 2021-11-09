@@ -48,7 +48,7 @@ void sh_exit(char * command, char ** argument){
 
 //The inner function entry
 
-bool inner_exec(char ** argument, int count){
+bool inner_exec(char ** argument, int count, int status){
 	bool flag = 0;
 	if(!strcmp(argument[0], "echo")){
 		echo(argument, count);

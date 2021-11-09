@@ -20,6 +20,7 @@ bool outer_exec(char ** argument, int count, char ** dir, int dir_count){
         else{
             int pid = fork();
             if(pid == 0){   //child thread
+                printf("%s\n%s\n%s\n%s\n%d\n", path, argument[0], argument[1], argument[2], count);
                 execvp(path, argument);
                 exit(0);
             }
@@ -27,9 +28,11 @@ bool outer_exec(char ** argument, int count, char ** dir, int dir_count){
                 waitpid(pid, NULL, 0);
             }
             free(buf);
+            free(path);
             return 1;
         }
     }
     free(buf);
+    free(path);
     return 0;
 }
