@@ -9,7 +9,7 @@ int main(){
 		if(!esh::read_command()){
 			continue;
 		}
-		esh::exec_command(0);
+		esh::start_exec();
 		esh::clear_space();
 	}
 }

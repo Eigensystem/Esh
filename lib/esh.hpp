@@ -5,6 +5,11 @@
 #include "inner_command.hpp"
 #include "outer_command.hpp"
 
+#ifndef _PIPE_REDIRECT_HPP_
+#define _PIPE_REDIRECT_HPP_
+	#include "pipe_redirect.hpp"
+#endif
+
 #ifndef _STRINGHANDLER_HPP_
 #define _STRINGHANDLER_HPP_
     #include "../tools/stringHandler.hpp"
@@ -21,6 +26,7 @@ namespace esh{
 	char * work_dir;
 	command * cmd;
 	int savein, saveout;
+	int exec_count;
 
 	void start_config(){
 		dir = (char **)malloc(0x20);
@@ -33,10 +39,11 @@ namespace esh{
 		strcpy(tmp, buf);
 		dir[0] = tmp;
 		dir[1] = nullptr;
+		dir[2] = "/usr/bin/";
 		strcpy(buf, getenv("HOME"));
 		chdir(buf);
 		free(buf);
-		dir_count = 2;
+		dir_count = 3;
 		savein = dup(STDIN_FILENO);
 		saveout = dup(STDOUT_FILENO);
 	}
@@ -59,49 +66,92 @@ namespace esh{
 
 	bool exec_command(int num){
 		int fd;
-		if(cmd->sub_status[num] & 0b1){
-			fd = open(cmd->command_arr[num][cmd->sub_counter[num]-1], O_RDONLY);
-			if(fd == -1){
-				dir_nexist("zsh", cmd->command_arr[num][cmd->sub_counter[num]-1]);
+		bool error;
+		if(cmd->redirectR(num)){		//redirect stdin to file
+			if((fd = setredirectR(cmd, num)) == -1){
 				return 0;
 			}
-			--cmd->sub_counter[num];
-			dup2(fd, STDIN_FILENO);
 		}
-		if(cmd->sub_status[num] & 0b10){
-			fd = open(cmd->command_arr[num][cmd->sub_counter[num]-1], O_WRONLY|O_TRUNC);
-			if(fd == -1){
-				fd = open(cmd->command_arr[num][cmd->sub_counter[num]-1], O_WRONLY|O_CREAT, 0644);
+		if(cmd->redirectW(num)){	//redirect stdout to file
+			if((fd = setredirectW(cmd, num)) == -1){
+				return 0;
 			}
-			std::cout << fd << std::endl;
-			--cmd->sub_counter[num];
-			cmd->command_arr[num][cmd->sub_counter[num]] = nullptr;
-			dup2(fd, STDOUT_FILENO);
 		}
+		//check & execute the inner command if the inputed commands are in it
 		if(inner_exec(cmd->command_arr[num], cmd->sub_counter[num], cmd->sub_status[num])){
-			if(cmd->sub_status[num] & 0b1){
-				dup2(savein, STDIN_FILENO);
-			}
-			if(cmd->sub_status[num] & 0b10){
-				dup2(saveout, STDOUT_FILENO);
-			}
-			close(fd);
-			return 1;
+			;
 		}
-		if(!outer_exec(cmd->command_arr[num], cmd->sub_counter[num], dir, dir_count)){
+		else if(!outer_exec(cmd->command_arr[num], cmd->sub_counter[num], dir, dir_count)){
 			comd_nfount(cmd->command_arr[num][0]);
+			error = 1;
 		}
-		if(cmd->sub_status[num] & 0b1){
-			dup2(savein, STDIN_FILENO);
+		if(cmd->redirectR(num)){		//recover stdin if it has been changed
+			recoverR(savein);
 		}
-		if(cmd->sub_status[num] & 0b10){
-			dup2(saveout, STDOUT_FILENO);
+		if(cmd->redirectW(num)){	//recover stdout if it has been changed
+			recoverW(saveout);
 		}
+
 		close(fd);
 		return 1;
 	}
 
+	void runpipe(command * cmd, int num){
+		int fd[2];
+		pid_t pid_in, pid_out;
+		if(cmd->redirectW(num) || cmd->redirectR(num+1)){
+			exec_command(num);
+		}
+		else{
+			if(pipe(fd)){
+				//error info
+			}
+			else{
+				pid_out = fork();
+				if(pid_out == 0){
+					close(fd[1]);
+					dup2(fd[0], STDIN_FILENO);
+					exec_command(num+1);
+					close(fd[0]);
+					exit(0);
+				}
+				else{
+					pid_in = fork();
+					if(pid_in == 0){
+						close(fd[0]);
+						dup2(fd[1], STDOUT_FILENO);
+						exec_command(num);
+						close(fd[1]);
+						exit(0);
+					}
+					else{
+						close(fd[0]);
+						close(fd[1]);
+						waitpid(pid_in, NULL, 0);
+						waitpid(pid_out, NULL, 0);
+					}
+				}
+			}
+		}
+		return;
+	}
+
+	void start_exec(){
+		exec_count = 0;
+		while(exec_count < cmd->comd_counter){
+			if(!cmd->piped(exec_count)){	//no pipe
+				exec_command(exec_count);
+				++exec_count;
+			}
+			else{
+				runpipe(cmd, exec_count);
+				exec_count += 2;
+			}
+		}
+	}
+
 	void clear_space(){
+		fflush(stdout);
 		delete cmd;
 		return;
 	}

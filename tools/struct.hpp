@@ -173,10 +173,26 @@ set redirect_read to 0b1
 		free(sub_counter);
 		free(sub_status);
 		free(raw_command);
+		free(command_arr[0][0]);
 		for(int i = 0; i < comd_counter; ++i){
-			free(command_arr[i][0]);
 			free(command_arr[i]);
 		}
 		free(command_arr);
+	}
+
+	bool redirectR(int num){
+		return (this->sub_status[num] & 0b1);
+	}
+	
+	bool redirectW(int num){
+		return (this->sub_status[num] & 0b10);
+	}
+	
+	bool piped(int num){
+		return (this->sub_status[num] & 0b100);
+	}
+	
+	bool next_cmd(int num){
+		return (this->sub_status[num] & 0b1000);
 	}
 };
