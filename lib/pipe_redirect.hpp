@@ -49,5 +49,3 @@ void recoverR(int in){
 void recoverW(int out){
 	dup2(out, STDOUT_FILENO);
 }
-
-
