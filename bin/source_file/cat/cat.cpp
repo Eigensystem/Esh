@@ -20,9 +20,12 @@ int main(int argc, char * argv[]){
 	char * work_dir;
 
 	if(argc == 1){
-		string str;
+		string str = "start";
 		while(1){
 			getline(cin, str);
+			if(cin.eof()){
+				break;
+			}
 			cout << str << endl;
 		}
 	}

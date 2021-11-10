@@ -1,5 +1,6 @@
 #include <iostream>
 #include <readline/readline.h>
+#include <readline/history.h>
 #include <fcntl.h>
 #include "../config/config.hpp"
 #include "inner_command.hpp"
@@ -56,7 +57,9 @@ namespace esh{
 		}
 		dir[1] = work_dir;
 		strcat(buf, " > \0");
+		using_history();
 		char * str = readline(buf);		//readline prompt setting : PATH_TO_HERE >
+		add_history(str);
 		if(str[0] == '\0'){
 			return 0;
 		}
@@ -184,6 +187,7 @@ namespace esh{
 	}
 
 	void clear_space(){
+		printf("\n");
 		fflush(stdout);
 		delete cmd;
 		return;
