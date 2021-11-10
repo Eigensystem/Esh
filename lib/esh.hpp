@@ -12,12 +12,12 @@
 
 #ifndef _STRINGHANDLER_HPP_
 #define _STRINGHANDLER_HPP_
-    #include "../tools/stringHandler.hpp"
+	#include "../tools/stringHandler.hpp"
 #endif
 
 #ifndef _ERRORHANDLER_HPP_
 #define _ERRORHANDLER_HPP_
-    #include "../tools/errorHandler.hpp"
+	#include "../tools/errorHandler.hpp"
 #endif
 
 namespace esh{
@@ -96,17 +96,58 @@ namespace esh{
 		return 1;
 	}
 
-	void runpipe(command * cmd, int num){
+
+	int rpipe(command * cmd, int num, int count, int prev_fd){
 		int fd[2];
 		pid_t pid_in, pid_out;
-		if(cmd->redirectW(num) || cmd->redirectR(num+1)){
-			exec_command(num);
+		pid_t prev_exec_pid;
+		if(cmd->redirectR(num) && count != 0){
+			//error info here
+			//return
 		}
-		else{
-			if(pipe(fd)){
-				//error info
+		else if(cmd->redirectW(num)){
+			if(count != 0){
+				prev_exec_pid = fork();
+				if(prev_exec_pid == 0){
+					dup2(prev_fd, STDIN_FILENO);
+					exec_command(num);
+					cmd->sub_status[num] &= 0b111101;   //set redirect_write bit to 0
+					exit(0);
+				}
 			}
-			else{
+			else{       //the sub cmd is the first one
+				exec_command(num);
+				cmd->sub_status[num] &= 0b111101;   //set redirect_write bit to 0
+			}
+		}
+	
+		if(pipe(fd)){                                   //not succeed to start pipe
+			return -1;
+		}
+		else{                                           //succeed to start pipe
+			pid_in = fork();                            //First redirect this command's output to pipe
+			if(pid_in == 0){                            //And execute the 
+				close(fd[0]);
+				dup2(fd[1], STDOUT_FILENO);
+				if(count != 0){
+					dup2(prev_fd, STDIN_FILENO);
+				}
+				exec_command(num);
+				if(count != 0){
+					close(prev_fd);
+				}
+				close(fd[1]);
+				exit(0);
+			}
+			if(count != 0){
+				close(prev_fd);
+			}
+			if(cmd->piped(num+1)){                      //If next command is in the pipe link
+				close(fd[1]);
+				count = rpipe(cmd, num+1, count+1, fd[0]);
+			}
+			else{                                       //If this is the last one in the pipe link
+				cmd->sub_status[num+1] &= 0b111110;     //set redirect_read bit to 0 and execute it
 				pid_out = fork();
 				if(pid_out == 0){
 					close(fd[1]);
@@ -115,26 +156,18 @@ namespace esh{
 					close(fd[0]);
 					exit(0);
 				}
-				else{
-					pid_in = fork();
-					if(pid_in == 0){
-						close(fd[0]);
-						dup2(fd[1], STDOUT_FILENO);
-						exec_command(num);
-						close(fd[1]);
-						exit(0);
-					}
-					else{
-						close(fd[0]);
-						close(fd[1]);
-						waitpid(pid_in, NULL, 0);
-						waitpid(pid_out, NULL, 0);
-					}
+				else{                                   //Wait until the lastest command finish its executing.
+					close(fd[0]);
+					close(fd[1]);
+					waitpid(pid_out, NULL, 0);          
+					count+=2;
+					return count; 
 				}
 			}
+			return count;
 		}
-		return;
 	}
+
 
 	void start_exec(){
 		exec_count = 0;
@@ -144,8 +177,8 @@ namespace esh{
 				++exec_count;
 			}
 			else{
-				runpipe(cmd, exec_count);
-				exec_count += 2;
+				int tmp = rpipe(cmd, exec_count, 0, -1);
+				exec_count += tmp;
 			}
 		}
 	}
