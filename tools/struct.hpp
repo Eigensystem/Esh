@@ -28,9 +28,13 @@ set redirect_read to 0b1
 */
 	short * sub_status;
 	char * raw_command;
-	char *** command_arr;   //first layer : sub command in a command if use pipe
-						//second layer: arguments array in a sub command
-						//third layer : arguments string
+//first layer : sub command in a command if use pipe
+//second layer: arguments array in a sub command
+//third layer : arguments string
+	char *** command_arr;
+	char ** xargs_argu;
+	int xargs_counter;
+
 	command(char * string){
 		comd_counter = 0;		  //sub command calculater
 		int sub_size;			  //single sub command's argument's number
@@ -40,6 +44,8 @@ set redirect_read to 0b1
 		sub_status = (short *)malloc(4 * sizeof(short));
 		command_arr = (char ***)malloc(size);
 		raw_command = (char *)malloc(strlen(string));
+		xargs_argu = (char **)malloc(0x21);
+		xargs_counter = 0;
 		strcpy(raw_command, string);		//copy the raw command string and store it to struct
 		char * element;
 		

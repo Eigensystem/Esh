@@ -20,7 +20,7 @@ int main(int argc, char * argv[]){
 	char * work_dir;
 
 	if(argc == 1){
-		string str = "start";
+		string str;
 		while(1){
 			getline(cin, str);
 			if(cin.eof()){

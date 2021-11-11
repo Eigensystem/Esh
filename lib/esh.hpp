@@ -21,6 +21,11 @@
 	#include "../tools/errorHandler.hpp"
 #endif
 
+#ifndef _XARGS_HPP_
+#define _XARGS_HPP_
+	#include "xargs.hpp"
+#endif
+
 namespace esh{
 	char ** dir;
 	int dir_count;
@@ -40,11 +45,11 @@ namespace esh{
 		strcpy(tmp, buf);
 		dir[0] = tmp;
 		dir[1] = nullptr;
-		dir[2] = "/usr/bin/";
+		// dir[2] = "/usr/bin/";
 		strcpy(buf, getenv("HOME"));
 		chdir(buf);
 		free(buf);
-		dir_count = 3;
+		dir_count = 2;
 		savein = dup(STDIN_FILENO);
 		saveout = dup(STDOUT_FILENO);
 	}
@@ -79,6 +84,9 @@ namespace esh{
 			if((fd = setredirectW(cmd, num)) == -1){
 				return 0;
 			}
+		}
+		if(!strcmp(cmd->command_arr[num][0], "xargs")){	//xargs command inner processing
+			xargs_processing(cmd, num);
 		}
 		//check & execute the inner command if the inputed commands are in it
 		if(inner_exec(cmd->command_arr[num], cmd->sub_counter[num], cmd->sub_status[num])){
