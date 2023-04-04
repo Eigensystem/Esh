@@ -1,22 +1,15 @@
 #include "StringParser.hh"
 #include "EshException.hh"
 
-void CommandFlags::reset() {
-  _inpipe = 0;
-  _outpipe = 0;
-  _background = 0;
-  _prev_success = 0;
-  return;
-}
 
-bool StringParser::parse_str(string s) {
+bool StringParser::parse_str(string s, CommandManager& mgr) {
   size_t pos = s.find_first_not_of(" ");
   size_t argu_start = 0, quote_start = 0;
   // if not command to execute, exit to main loop
   if (pos == string::npos) {
     return false;
   }
-  _cnt = 0;
+  mgr._cnt = 0;
   vector<string> comm_argu;
   CommandFlags flags;
   // travelsal the string
@@ -65,10 +58,10 @@ bool StringParser::parse_str(string s) {
         break;
       case ';':
         comm_argu.push_back(s.substr(argu_start, pos - argu_start));
-        ++_cnt;
-        _arguments.push_back(comm_argu);
+        ++mgr._cnt;
+        mgr._arguments.push_back(comm_argu);
         comm_argu.clear();
-        _command_flags.push_back(flags);
+        mgr._command_flags.push_back(flags);
         flags.reset();
         if (pos + 1 < s.size()) {
           ++pos;
@@ -76,11 +69,11 @@ bool StringParser::parse_str(string s) {
         break;
       case '|':
         comm_argu.push_back(s.substr(argu_start, pos - argu_start));
-        ++_cnt;
-        _arguments.push_back(comm_argu);
+        ++mgr._cnt;
+        mgr._arguments.push_back(comm_argu);
         comm_argu.clear();
         flags._outpipe = 1;
-        _command_flags.push_back(flags);
+        mgr._command_flags.push_back(flags);
         flags.reset();
         flags._inpipe = 1;
         //TODO: pipe prompt sign (in else)
@@ -91,10 +84,10 @@ bool StringParser::parse_str(string s) {
       case '&':
         comm_argu.push_back(s.substr(argu_start, pos - argu_start));
         if (pos + 1 < s.size() && s.at(pos+1) == '&') {
-          ++_cnt;
-          _arguments.push_back(comm_argu);
+          ++mgr._cnt;
+          mgr._arguments.push_back(comm_argu);
           comm_argu.clear();
-          _command_flags.push_back(flags);
+          mgr._command_flags.push_back(flags);
           flags.reset();
           flags._prev_success = 1;
           //TODO: cmdand prompt sign (in else)
@@ -103,11 +96,11 @@ bool StringParser::parse_str(string s) {
           }
         }
         else {
-          ++_cnt;
-          _arguments.push_back(comm_argu);
+          ++mgr._cnt;
+          mgr._arguments.push_back(comm_argu);
           comm_argu.clear();
           flags._background = 1;
-          _command_flags.push_back(flags);
+          mgr._command_flags.push_back(flags);
           flags.reset();
           if (pos + 1 < s.size()) {
             ++pos;
@@ -123,25 +116,13 @@ bool StringParser::parse_str(string s) {
     }
   }
   if (!comm_argu.empty()) {
-    _arguments.push_back(comm_argu);
-    _command_flags.push_back(flags);
+    mgr._arguments.push_back(comm_argu);
+    mgr._command_flags.push_back(flags);
   }
   return true;
 }
 
 
-StringParser::StringParser(string command) {
-  parse_str(command);
-}
-
-pair<vector<string>&, CommandFlags&>
-StringParser::operator[](size_t idx)
-{
-  return pair<vector<string>&, CommandFlags&>(_arguments[idx], _command_flags[idx]);
-}
-
-pair<const vector<string>&, const CommandFlags&> 
-StringParser::operator[](size_t idx) const
-{
-  return pair<const vector<string>&, const CommandFlags&>(_arguments[idx], _command_flags[idx]);
+StringParser::StringParser(string command, CommandManager& mgr) {
+  parse_str(command, mgr);
 }

@@ -4,6 +4,7 @@ set(CMAKE_CXX_STANDARD 14)
 project(Esh LANGUAGES CXX)
 
 aux_source_directory(src LIB_SOURCES)
+aux_source_directory(src/inner_cmd LIB_SOURCES)
 add_library(EshLib STATIC ${LIB_SOURCES})
 
 add_executable(test esh.cc)

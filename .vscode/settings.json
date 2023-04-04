@@ -67,7 +67,11 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "*.ipp": "cpp",
+        "bitset": "cpp",
+        "optional": "cpp",
+        "*.inc": "cpp"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/."
 }

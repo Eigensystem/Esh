@@ -5,8 +5,8 @@
 #include "CommandManager.hh"
 
 class EshInstance {
-  CommandManager cmd_mgr;
-  StringParser cmd_parser;
+  CommandManager _cmd_mgr;
+  StringParser _cmd_parser;
 
   EshInstance();
 };
